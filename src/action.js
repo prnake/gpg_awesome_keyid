@@ -14,12 +14,12 @@ const rule = require('./rule');
 const dbs_path = path.join(__dirname, '../dbs');
 
 async function gen_basic_key () {
-    const { privateKeyArmored } = await openpgp.generateKey({
+    const { privateKey, publicKey, revocationCertificate } = await openpgp.generateKey({
         type   : 'ecc', // Type of the key, defaults to ECC
         curve  : 'curve25519', // ECC curve name, defaults to curve25519
         userIDs: [{name: 't'}]
     });
-    return await openpgp.readKey({ armoredKey: privateKeyArmored });
+    return await openpgp.readPrivateKey({ armoredKey: privateKey });
 }
 
 async function notify_with_bark (barkid, fingerprint) {
@@ -40,7 +40,7 @@ async function do_generate (db_path, barkid) {
     let prikey = null;
     let start = new Date();
 
-    for(let index = 0; ; index++) {
+    for (let index = 0; ; index++) {
         if(0 === index % 10000) {
             prikey = await gen_basic_key();
             const time_shift = (new Date() - start) / 1000;
@@ -50,9 +50,9 @@ async function do_generate (db_path, barkid) {
         // 修改key的创建时间并重新计算指纹
         // ! 需要注意的是，此时的key的subkey和uid的签名都是需要修正的，是原始指纹的key的签名
         prikey.keyPacket.created = new Date(prikey.keyPacket.created.getTime() - 1000);
+        await prikey.keyPacket.computeFingerprint();
         let r = {
-            // ! 注意此处必须使用public key的指纹，private key的指纹并没有重新计算
-            fpr: prikey.toPublic().getFingerprint(),
+            fpr: prikey.getFingerprint(),
             key: prikey.armor()
         };
         // 仅保存或发送提醒
@@ -114,11 +114,11 @@ passwd
     });
 }
 
-function generate (barkid) {
+function generate (process, barkid) {
     try {
         fs.mkdirSync(dbs_path);
     }catch(e) {}
-    const process_count = os.cpus().length;
+    const process_count = process;
     for(let i = 0; i < process_count; i++) {
         fork(
             __filename,

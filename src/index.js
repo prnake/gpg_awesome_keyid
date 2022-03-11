@@ -6,9 +6,10 @@ program.version(process.env.npm_package_version);
 program
     .command('start')
     .description('开始查找gpg靓号')
+    .option('-p, --process <number>', '线程数')
     .option('-b, --barkid <backid>', '指定通知使用的barkid')
     .action((options)=>{
-        action.generate(options.barkid);
+        action.generate(options.process, options.barkid);
     });
 
 program
