@@ -147,8 +147,8 @@ async function gen_basic_key () {
 ``` shell
 # 直接开始算号
 node . start
-# 开始算号，发现帐号后发送bark通知
-node . start --barkid xxxxxx
+# 开始算号，发现帐号后发送url通知，形式类似`https://www.example.com/?text=`，将会在后面添加`${fingerprint}`
+node . start --url xxxxxx
 ```
 
 ## 查找保存的数据
