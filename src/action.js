@@ -62,7 +62,7 @@ async function do_generate (db_path, url) {
         if (save || notify) {
             await (await db.prepare('insert into key(fpr,key) values(?,?)')).run(r.fpr, r.key);
         }
-        if (notify || index == 0) {
+        if (notify) {
             await notify_with_url(url, r.fpr);
         }
     }
