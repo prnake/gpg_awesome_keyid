@@ -108,8 +108,8 @@ passwd
     list(suffix, async (key) => {
         let prikey = await openpgp.readKey({ armoredKey: key });
         let nk = await openpgp.reformatKey({ privateKey: prikey, userIDs: [uid] });
-        await gpg_import(nk.privateKeyArmored);
-        console.log(`已导入key[${nk.key.getFingerprint()}]`);
+        await gpg_import(nk.privateKey);
+        console.log(`已导入key[${prikey.getFingerprint()}]`);
     });
 }
 
